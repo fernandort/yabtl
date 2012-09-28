@@ -17,7 +17,7 @@ typedef enum yabtl_key_type
   YABTL_STRING,
   YABTL_INT,
   YABTL_UINT32_T,
-  YABTL_UINT8_t,
+  YABTL_UINT8_T,
   YABTL_CHAR,
   YABTL_UNSIGNED_CHAR,
   YABTL_LONG,
@@ -44,6 +44,23 @@ typedef struct
 typedef struct
 {
   yabtl_node *root;        // Pointer to root node.
-  uint32_t items_per_node; // The number of items per node for this b-tree.
+  uint32_t order;          // The number of items per node for this b-tree.
   yabtl_key_type key_type; // Type of data for the key.
+  yabtl_cmp ( *compare )( void *, void * ); // Pointer to comparision function.
 } yabtl;
+
+// Functions.
+yabtl_cmp yabtl_compare_string( void *key_1, void *key_2 );
+yabtl_cmp yabtl_compare_int( void *key_1, void *key_2 );
+yabtl_cmp yabtl_compare_uint32_t( void *key_1, void *key_2 );
+yabtl_cmp yabtl_compare_uint8_t( void *key_1, void *key_2 );
+yabtl_cmp yabtl_compare_char( void *key_1, void *key_2 );
+yabtl_cmp yabtl_compare_unsigned_char( void *key_1, void *key_2 );
+yabtl_cmp yabtl_compare_long( void *key_1, void *key_2 );
+void yabtl_copy_key( yabtl *tree, yabtl_item *item, void *key );
+yabtl_node *yabtl_allocate_node( yabtl *tree );
+void yabtl_init( yabtl *tree, uint32_t order, yabtl_key_type key_type );
+bool yabtl_split_child( yabtl *tree, yabtl_node *node, uint32_t index );
+yabtl_item *yabtl_insert( yabtl *tree, yabtl_node **node, void *key, void *data );
+yabtl_cmp ( *yabtl_compare )( void *, void * );
+yabtl_item *yabtl_search( yabtl_node *node, void *key );
