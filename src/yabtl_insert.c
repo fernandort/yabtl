@@ -124,9 +124,9 @@ void yabtl_init( yabtl *tree, uint32_t order, yabtl_key_type key_type )
 // Binary search to find location of node.
 int yabtl_binary_search( yabtl *tree, yabtl_node *node, void *key )
 {
-  uint32_t max;
-  uint32_t min;
-  uint32_t mid;
+  int max;
+  int min;
+  int mid;
   yabtl_cmp cmp;
   void *mid_key;
 
@@ -145,8 +145,15 @@ int yabtl_binary_search( yabtl *tree, yabtl_node *node, void *key )
   while ( min <= max )
   {
     // Find the mid-point index.
-    mid = ( ( min + max ) >> 1 );
+    if ( min == max )
+    {
+      mid = min;
+    } else
+    {
+      mid = ( ( min + max ) >> 1 );
+    }
 
+printf( "Count: %d, min: %d, max: %d, mid: %d\n", node->count, min, max, mid );
     // Get the corresponding key.
     mid_key = node->item[mid].key;
 
@@ -167,14 +174,35 @@ int yabtl_binary_search( yabtl *tree, yabtl_node *node, void *key )
   }
 
   // Return the closest index in negative form.
-  return -min;
+  return -( min + 1 );
 }
 
-// Insert a node into the tree.
-yabtl_item *yabtl_insert( yabtl *tree, yabtl_node **node, void *key, void *data )
+// Insert an item into a node.
+void yabtl_insert_item( yabtl *tree, yabtl_node **node, int index, void *key, void *data )
 {
-  int i, j;
-  yabtl_cmp cmp;
+  int j;
+
+  // Insert directly, no need to split.
+  for ( j = ( *node )->count; j > index; j-- )
+  {
+    ( *node )->item[j + 1] = ( *node )->item[j];
+  }
+  ( *node )->count++;
+
+  // Copy the key and set data.
+  yabtl_copy_key( tree, &( *node )->item[index], key );
+  ( *node )->item[index].data = data;
+}
+
+// Insert an item into the tree.
+yabtl_item *yabtl_insert_recursive( yabtl *tree, yabtl_node **node, yabtl_item **to_be_inserted, void *key, void *data )
+{
+  int index;
+  int i, j, mid;
+  yabtl_item *result;
+  yabtl_node *new_node;
+  void *temp;
+  bool found;
 
   // Make sure we weren't passed a null node.
   if ( node == NULL || *node == NULL )
@@ -183,52 +211,105 @@ yabtl_item *yabtl_insert( yabtl *tree, yabtl_node **node, void *key, void *data 
   }
 
   // Try to find our insert position.
-  i = 0;
+  index = 0;
+  found = false;
   if ( ( *node )->count == 0 )
   {
-    i = 0;
-    cmp = LESS_THAN;
+    index = 0;
   } else
   {
-    i = yabtl_binary_search( tree, *node, key );
-    if ( i >= 0 )
+    index = yabtl_binary_search( tree, *node, key );
+    if ( index >= 0 )
     {
-      cmp = EQUAL_TO;
+      found = true;
     } else
     {
-      cmp = LESS_THAN;
-      i = i * -1;
+      index = index * -1 - 1;
     }
   }
 
-  if ( cmp == EQUAL_TO )
+  if ( found == true )
   {
     // If we found the key in this node, return it without updating the data.
-    return &( *node )->item[i];
+    return &( *node )->item[index];
   }
 
   if ( ( *node )->leaf == true )
   {
-   // If the node is a leaf, try to insert it.
-    if ( ( *node )->count < tree->order - 1 )
+    // If the node is a leaf, try to insert it.
+    if ( ( *node )->count < tree->order )
     {
       // Insert directly, no need to split.
-      for ( j = ( *node )->count; j > i; j-- )
-      {
-        ( *node )->item[j + 1] = ( *node )->item[j];
-      }
-      ( *node )->count++;
-      yabtl_copy_key( tree, &( *node )->item[i], key );
-      ( *node )->item[i].data = data;
-      return &( *node )->item[i];
+      yabtl_insert_item( tree, node, index, key, data );
+
+      // We don't have a node to insert into the parent node.
+      *to_be_inserted = NULL;
+
+      // Return this item.
+      return &( *node )->item[index];
     }
 
     // If we got here, we need to split this node.
-    
-    printf( "O noes!  I don't want to split a node!\n" );
+    new_node = yabtl_allocate_node( tree );
+    mid = ( ( *node )->count >> 1 );
+
+    // Move half of the nodes to the new node.
+    for ( i = mid; i < ( *node )->count; i++ )
+    {
+      // Move the key.
+      temp = ( *node )->item[i].key;
+      new_node->item[i - mid].key = temp;
+      ( *node )->item[i].key = NULL;
+
+      // Move the data.
+      temp = ( *node )->item[i].data;
+      new_node->item[i - mid].data = temp;
+      ( *node )->item[i].data = NULL;
+    }
+
+    // Insert the new item into the left or right node.
+    if ( index < mid )
+    {
+      yabtl_insert_item( tree, node, index, key, data );
+      *to_be_inserted = &( *node )->item[index];
+    } else if ( index > mid )
+    {
+      i = yabtl_binary_search( tree, new_node, key );
+      yabtl_insert_item( tree, &new_node, i, key, data );
+      *to_be_inserted = &new_node->item[i];
+    } else
+    {
+      yabtl_copy_key( tree, *to_be_inserted, key );
+      ( *to_be_inserted )->data = data;
+    }
+printf( "To be inserted: %d\n", *( int * )( ( *to_be_inserted )->key ) );
+    // Set the to_be_inserted node to our mid.
+
   } else
   {
     // If it's not a leaf, go to that child.
-    return yabtl_insert( tree, ( yabtl_node **)&( *node )->child[i], key, data );
+    result = yabtl_insert_recursive( tree, ( yabtl_node **)&( *node )->child[i], to_be_inserted, key, data );
+    if ( *to_be_inserted == NULL )
+    {
+      return result;
+    }
+
+    // If to_be_inserted was set, insert that node into this one.
+    printf( "Need to add: %d\n", *( int * )( *to_be_inserted )->key );
   }
+}
+
+// Wrapper for recursive insert function.
+yabtl_item *yabtl_insert( yabtl *tree, yabtl_node **node, void *key, void *data )
+{
+  yabtl_item *result;
+  yabtl_item to_be_inserted[1];
+
+  result = yabtl_insert_recursive( tree, node, ( yabtl_item ** )&to_be_inserted, key, data );
+
+  if ( to_be_inserted != NULL )
+  {
+    
+  }
+  return result;
 }

@@ -28,7 +28,6 @@ typedef struct
 {
   void *key;  // Pointer to key for this item.
   void *data; // Pointer to data for this item.
-  uint32_t i; // Index of this item within the node.
 } yabtl_item;
 
 // Definition of a single b-tree node.
