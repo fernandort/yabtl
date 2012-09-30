@@ -2,7 +2,7 @@
 #include <sys/time.h>
 
 #define COUNT 3
-#define TOTAL 6
+#define TOTAL 10 //10000
 
 int main( int argc, char *argv[] )
 {
@@ -15,9 +15,9 @@ int main( int argc, char *argv[] )
   yabtl_init( &tree, COUNT, YABTL_INT );
 
   gettimeofday(&tv1, NULL);
-  for ( i = 0; i < TOTAL; i++ )
+  for ( i = 0; i < TOTAL + 1; i++ )
   {
-    v = 10 - i;
+    v = i; //TOTAL - i; //i; //10 - i;
     item = yabtl_insert( &tree, ( void * )&v, ( void * )&i );
   }
   gettimeofday(&tv2, NULL);

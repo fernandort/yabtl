@@ -304,6 +304,7 @@ yabtl_item *yabtl_insert_item_in_node
   bool update_children
 )
 {
+  int i;
   yabtl_node *new_node;
 
   // If the node isn't empty, insert it directly.
@@ -315,6 +316,10 @@ yabtl_item *yabtl_insert_item_in_node
     // Update child pointers.
     if ( update_children == true )
     {
+      for ( i = ( *node )->count + 1; i > index; i-- )
+      {
+        ( *node )->child[i] = ( *node )->child[i - 1];
+      }
       ( *node )->child[index] = *left_child;
       ( *node )->child[index + 1] = *right_child;
     }
@@ -336,7 +341,6 @@ yabtl_item *yabtl_insert_item_in_node
   *to_be_inserted = yabtl_split_node( tree, node, &new_node, new_item, index );
   *left_child = *node;
   *right_child = new_node;
-  //printf( "Split, moving up %d\n", *( int * )( *to_be_inserted )->key );
 
   // Return the new item.
   return new_item;

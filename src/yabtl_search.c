@@ -8,7 +8,7 @@ yabtl_item *yabtl_search_recursive
   void *key
 )
 {
-  uint32_t i;
+  int index;
   yabtl_cmp result;
 
   // Some basic checks before continuing.
@@ -17,29 +17,14 @@ yabtl_item *yabtl_search_recursive
     return NULL;
   }
 
-  // Find the position in this node (or where to go next).
-  i = 0;
-  while ( i < node->count )
+  index  = yabtl_binary_search( tree, node, key );
+  if ( index >= 0 )
   {
-     if ( ( result = tree->compare( node->item[i]->key, key ) ) != LESS_THAN )
-     {
-       break;
-     }
-     i++;
-  }
-
-  if ( i < node->count && result == EQUAL_TO )
-  {
-    // We found the item, return it.
-    return node->item[i];
-  } else if ( node->leaf == true )
-  {
-    // We can't check any further down the tree, item doesn't exist.
-    return NULL;
+    return node->item[index];
   } else
   {
-    // Need to check the child of this node.
-    return yabtl_search_recursive( tree, ( yabtl_node * )node->child[i], key );
+    index = index * -1 - 1;
+    return yabtl_search_recursive( tree, ( yabtl_node * )node->child[index], key );
   }
 }
 
