@@ -16,7 +16,7 @@ yabtl_item *yabtl_search( yabtl_node *node, void *key )
 
   // Find the position in this node (or where to go next).
   i = 0;
-  while ( i < node->count && ( ( result = yabtl_compare( node->item[i].key, key ) ) == LESS_THAN ) )
+  while ( i < node->count && ( ( result = yabtl_compare( node->item[i]->key, key ) ) == LESS_THAN ) )
   {
      i++;
   }
@@ -24,7 +24,7 @@ yabtl_item *yabtl_search( yabtl_node *node, void *key )
   if ( i < node->count && result == EQUAL_TO )
   {
     // We found the item, return it.
-    return &node->item[i];
+    return node->item[i];
   } else if ( node->leaf == true )
   {
     // We can't check any further down the tree, item doesn't exist.

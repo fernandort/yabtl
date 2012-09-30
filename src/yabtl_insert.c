@@ -1,105 +1,108 @@
 #include <yabtl.h>
 
-void yabtl_copy_key( yabtl *tree, yabtl_item *item, void *key )
+// Copy a key of char * type.
+void yabtl_copy_key_string( yabtl_item **item, void *key )
 {
-  char *temp_key;
+  ( *item )->key = ( void * )strdup( ( char * )key );
+}
 
-  switch ( tree->key_type )
-  {
-    case YABTL_STRING:
-      temp_key = ( void * )( strdup( ( char * )key ) );
-      break;
-    case YABTL_INT:
-      temp_key = malloc( sizeof( int ) );
-      *temp_key = *( int * )key;
-      break;
-    case YABTL_UINT32_T:
-      temp_key = malloc( sizeof( uint32_t ) );
-      *temp_key = *( uint32_t * )key;
-      break;
-    case YABTL_UINT8_T:
-      temp_key = malloc( sizeof( uint8_t ) );
-      *temp_key = *( uint8_t * )key;
-      break;
-    case YABTL_CHAR:
-      temp_key = malloc( sizeof( char ) );
-      *temp_key = *( char * )key;
-      break;
-    case YABTL_UNSIGNED_CHAR:
-      temp_key = malloc( sizeof( unsigned char ) );
-      *temp_key = *( unsigned char * )key;
-      break;
-    case YABTL_LONG:
-      temp_key = malloc( sizeof( long ) );
-      *temp_key = *( long * )key;
-      break;
-    default:
-      break;
-  }
-  item->key = temp_key;
+// Copy a key of int type.
+void yabtl_copy_key_int( yabtl_item **item, void *key )
+{
+  ( *item )->key = malloc( sizeof( int ) );
+  *( int * )( *item )->key = *( int * )key;
+}
+
+// Copy a key of uint32_t type.
+void yabtl_copy_key_uint32_t( yabtl_item **item, void *key )
+{
+  ( *item )->key = malloc( sizeof( uint32_t ) );
+  *( uint32_t * )( *item )->key = *( uint32_t * )key;
+}
+
+// Copy a key of uint8_t type.
+void yabtl_copy_key_uint8_t( yabtl_item **item, void *key )
+{
+  ( *item )->key = malloc( sizeof( uint8_t ) );
+  *( uint8_t * )( *item )->key = *( uint8_t * )key;
+}
+
+// Copy a key of char type.
+void yabtl_copy_key_char( yabtl_item **item, void *key )
+{
+  ( *item )->key = malloc( sizeof( char ) );
+  *( char * )( *item )->key = *( char * )key;
+}
+
+// Copy a key of unsigned char type.
+void yabtl_copy_key_unsigned_char( yabtl_item **item, void *key )
+{
+  ( *item )->key = malloc( sizeof( unsigned char ) );
+  *( unsigned char * )( *item )->key = *( unsigned char * )key;
+}
+
+// Copy a key of long type.
+void yabtl_copy_key_long( yabtl_item **item, void *key )
+{
+  ( *item )->key = malloc( sizeof( long ) );
+  *( long * )( *item )->key = *( long * )key;
 }
 
 // Allocate a node.
-yabtl_node *yabtl_allocate_node( yabtl *tree )
+void yabtl_init_node( yabtl *tree, yabtl_node **node )
 {
-  uint32_t i;
-  yabtl_node *node;
-
-  // Allocate memory.
-  node = malloc( sizeof( yabtl_node ) );
-  if ( node == NULL )
-  {
-    // Error allocating memory.
-    return NULL;
-  }
+  int i;
 
   // Initialize the node, allocate memory for child and item pointers.
-  node->leaf = true;
-  node->count = 0;
-  node->child = calloc( tree->order, sizeof( yabtl_node * ) );
-  node->item = calloc( tree->order - 1, sizeof( yabtl_item * ) );
+  ( *node )->leaf = true;
+  ( *node )->count = 0;
+  ( *node )->child = malloc( tree->order * sizeof( void * ) );
+  ( *node )->item = malloc( tree->order * sizeof( yabtl_item * ) );
 
   // Initialize our child and item pointers.
-  for ( i = 0; i < tree->order - 1; i++ )
+  for ( i = 0; i < tree->order; i++ )
   {
-    node->child[i] = NULL;
-    node->item[i].data = NULL;
-    node->item[i].key = NULL;
+    ( *node )->child[i] = NULL;
+    ( *node )->item[i] = NULL;
   }
-  node->child[i] = NULL;
-
-  // Return it.
-  return node;
 }
 
 // Set the comparison function pointer.
-void yabtl_set_compare_pointer( yabtl *tree )
+void yabtl_set_functions( yabtl *tree )
 {
   switch ( tree->key_type )
   {
     case YABTL_STRING:
       tree->compare = &yabtl_compare_string;
+      tree->copy_key = &yabtl_copy_key_string;
       break;
     case YABTL_INT:
       tree->compare = &yabtl_compare_int;
+      tree->copy_key = &yabtl_copy_key_int;
       break;
     case YABTL_UINT32_T:
       tree->compare = &yabtl_compare_uint32_t;
+      tree->copy_key = &yabtl_copy_key_uint32_t;
       break;
     case YABTL_UINT8_T:
       tree->compare = &yabtl_compare_uint8_t;
+      tree->copy_key = &yabtl_copy_key_uint8_t;
       break;
     case YABTL_CHAR:
       tree->compare = &yabtl_compare_char;
+      tree->copy_key = &yabtl_copy_key_char;
       break;
     case YABTL_UNSIGNED_CHAR:
       tree->compare = &yabtl_compare_unsigned_char;
+      tree->copy_key = &yabtl_copy_key_char;
       break;
     case YABTL_LONG:
       tree->compare = &yabtl_compare_unsigned_char;
+      tree->copy_key = &yabtl_copy_key_unsigned_char;
       break;
     default:
       tree->compare = &yabtl_compare_int;
+      tree->copy_key = &yabtl_copy_key_int;
       break;
   }
 }
@@ -112,10 +115,11 @@ void yabtl_init( yabtl *tree, uint32_t order, yabtl_key_type key_type )
   // Set our items per node.
   tree->order = order;
   tree->key_type = key_type;
-  yabtl_set_compare_pointer( tree );
+  yabtl_set_functions( tree );
 
   // Create our root node.
-  node = yabtl_allocate_node( tree );
+  node = malloc( sizeof( yabtl_node ) );
+  yabtl_init_node( tree, &node );
 
   // Point the tree's root to this new node.
   tree->root = node;
@@ -153,9 +157,8 @@ int yabtl_binary_search( yabtl *tree, yabtl_node *node, void *key )
       mid = ( ( min + max ) >> 1 );
     }
 
-printf( "Count: %d, min: %d, max: %d, mid: %d\n", node->count, min, max, mid );
     // Get the corresponding key.
-    mid_key = node->item[mid].key;
+    mid_key = node->item[mid]->key;
 
     // Compare the two.
     cmp = tree->compare( mid_key, key );
@@ -178,24 +181,60 @@ printf( "Count: %d, min: %d, max: %d, mid: %d\n", node->count, min, max, mid );
 }
 
 // Insert an item into a node.
-void yabtl_insert_item( yabtl *tree, yabtl_node **node, int index, void *key, void *data )
+void yabtl_insert_item( yabtl *tree, yabtl_node **node, int index, yabtl_item *item )
 {
-  int j;
+  int i;
 
   // Insert directly, no need to split.
-  for ( j = ( *node )->count; j > index; j-- )
+  for ( i = ( *node )->count; i > index; i-- )
   {
-    ( *node )->item[j + 1] = ( *node )->item[j];
+    ( *node )->item[i] = ( *node )->item[i - 1];
   }
   ( *node )->count++;
 
-  // Copy the key and set data.
-  yabtl_copy_key( tree, &( *node )->item[index], key );
-  ( *node )->item[index].data = data;
+  // Update the pointer.
+  ( *node )->item[index] = item;
+}
+
+// Split a node into two.
+yabtl_item *yabtl_split_node( yabtl *tree, yabtl_node **left, yabtl_node **right, yabtl_item *item, int index )
+{
+  int i;
+  int mid;
+  yabtl_item *mid_item;
+
+  // Insert it into the left node first (making the count too high).
+  yabtl_insert_item( tree, left, index, item );
+
+  // Set the leaf flag.
+  ( *right )->leaf = ( *left )->leaf;
+
+  // Find the midpoint.
+  mid = ( ( *left )->count >> 1 );
+  mid_item = ( *left )->item[mid];
+
+  // Move half of the items and children to the right node.
+  for ( i = mid + 1; i < ( *left )->count; i++ )
+  {
+    ( *right )->item[i - mid - 1] = ( *left )->item[i];
+    ( *right )->child[i - mid - 1] = ( *left )->child[i];
+    ( *left )->item[i] = NULL;
+    ( *left )->child[i] = NULL;
+  }
+
+  // Update counts.
+  ( *right )->count = ( *left )->count - mid;
+  ( *left )->count = mid;
+
+  // Make the mid item null in the left node.
+  ( *left )->item[mid] = NULL;
+
+  // Return our mid item so it can be inserted into the parent.
+  return mid_item;
 }
 
 // Insert an item into the tree.
-yabtl_item *yabtl_insert_recursive( yabtl *tree, yabtl_node **node, yabtl_item **to_be_inserted, void *key, void *data )
+yabtl_item *yabtl_insert_recursive( yabtl *tree, yabtl_node **node, yabtl_item **to_be_inserted, yabtl_node **left_child, yabtl_node **right_child, void *key, void *data )
 {
   int index;
   int i, j, mid;
@@ -231,85 +270,78 @@ yabtl_item *yabtl_insert_recursive( yabtl *tree, yabtl_node **node, yabtl_item *
   if ( found == true )
   {
     // If we found the key in this node, return it without updating the data.
-    return &( *node )->item[index];
+    return ( *node )->item[index];
   }
 
   if ( ( *node )->leaf == true )
   {
     // If the node is a leaf, try to insert it.
-    if ( ( *node )->count < tree->order )
+    if ( ( *node )->count < tree->order - 1 )
     {
       // Insert directly, no need to split.
-      yabtl_insert_item( tree, node, index, key, data );
+      result = malloc( sizeof( yabtl_item ) );
+      tree->copy_key( &result, key );
+      result->data = data;
+      yabtl_insert_item( tree, node, index, result );
 
       // We don't have a node to insert into the parent node.
       *to_be_inserted = NULL;
+      *left_child = NULL;
+      *right_child = NULL;
 
       // Return this item.
-      return &( *node )->item[index];
+      return result;
     }
 
     // If we got here, we need to split this node.
-    new_node = yabtl_allocate_node( tree );
-    mid = ( ( *node )->count >> 1 );
+    new_node = malloc( sizeof( *new_node ) );
+    yabtl_init_node( tree, &new_node );
 
-    // Move half of the nodes to the new node.
-    for ( i = mid; i < ( *node )->count; i++ )
-    {
-      // Move the key.
-      temp = ( *node )->item[i].key;
-      new_node->item[i - mid].key = temp;
-      ( *node )->item[i].key = NULL;
+    // Create this new item.
+    result =  malloc( sizeof( yabtl_item ) );
+    tree->copy_key( &result, key );
+    result->data = data;
 
-      // Move the data.
-      temp = ( *node )->item[i].data;
-      new_node->item[i - mid].data = temp;
-      ( *node )->item[i].data = NULL;
-    }
+    // Split the node and insert the new item.
+    *to_be_inserted = yabtl_split_node( tree, node, &new_node, result, index );
+    *left_child = *node;
+    *right_child = new_node;
+    printf( "Split, moving up %d\n", *( int * )( *to_be_inserted )->key );
 
-    // Insert the new item into the left or right node.
-    if ( index < mid )
-    {
-      yabtl_insert_item( tree, node, index, key, data );
-      *to_be_inserted = &( *node )->item[index];
-    } else if ( index > mid )
-    {
-      i = yabtl_binary_search( tree, new_node, key );
-      yabtl_insert_item( tree, &new_node, i, key, data );
-      *to_be_inserted = &new_node->item[i];
-    } else
-    {
-      yabtl_copy_key( tree, *to_be_inserted, key );
-      ( *to_be_inserted )->data = data;
-    }
-printf( "To be inserted: %d\n", *( int * )( ( *to_be_inserted )->key ) );
-    // Set the to_be_inserted node to our mid.
-
+    // Return the new item.
+    return result;
   } else
   {
     // If it's not a leaf, go to that child.
-    result = yabtl_insert_recursive( tree, ( yabtl_node **)&( *node )->child[i], to_be_inserted, key, data );
+    result = yabtl_insert_recursive( tree, ( yabtl_node **)&( *node )->child[i], to_be_inserted, left_child, right_child, key, data );
     if ( *to_be_inserted == NULL )
     {
       return result;
     }
 
-    // If to_be_inserted was set, insert that node into this one.
-    printf( "Need to add: %d\n", *( int * )( *to_be_inserted )->key );
+    // Need to add the child's overflowed item here.
+    printf( "Boogety\n" );
   }
 }
 
 // Wrapper for recursive insert function.
 yabtl_item *yabtl_insert( yabtl *tree, yabtl_node **node, void *key, void *data )
 {
+  yabtl_node *left_child, *right_child;
   yabtl_item *result;
-  yabtl_item to_be_inserted[1];
+  yabtl_item *to_be_inserted;
+  to_be_inserted = NULL;
 
-  result = yabtl_insert_recursive( tree, node, ( yabtl_item ** )&to_be_inserted, key, data );
-
+  result = yabtl_insert_recursive( tree, node, &to_be_inserted, &left_child, &right_child, key, data );
   if ( to_be_inserted != NULL )
   {
-    
+    // Need to create a new root since this is full.
+    tree->root = malloc( sizeof( yabtl_node ) );
+    yabtl_init_node( tree, &tree->root );
+    yabtl_insert_item( tree, &tree->root, 0, to_be_inserted );
+    tree->root->child[0] = left_child;
+    tree->root->child[1] = right_child;
+    tree->root->leaf = false;
   }
   return result;
 }
