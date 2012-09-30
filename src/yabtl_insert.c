@@ -415,6 +415,9 @@ yabtl_item *yabtl_insert_recursive
   if ( found == true )
   {
     // If we found the key in this node, return it without updating the data.
+    *to_be_inserted = NULL;
+    *left_child = NULL;
+    *right_child = NULL;
     return ( *node )->item[index];
   }
 
