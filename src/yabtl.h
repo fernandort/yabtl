@@ -63,3 +63,4 @@ bool yabtl_split_child( yabtl *tree, yabtl_node *node, uint32_t index );
 yabtl_item *yabtl_insert( yabtl *tree, void *key, void *data );
 yabtl_cmp ( *yabtl_compare )( void *, void * );
 yabtl_item *yabtl_search( yabtl *, void *key );
+void yabtl_delete_node( yabtl_node **node );
