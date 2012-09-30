@@ -1,5 +1,25 @@
 #include <yabtl.h>
 
+void yabtl_iterate
+(
+  yabtl *tree,
+  yabtl_node *node
+)
+{
+  int i;
+
+  if ( node == NULL )
+  {
+    return;
+  }
+  for ( i = 0; i < tree->order; i++ )
+  {
+    yabtl_iterate( tree, ( yabtl_node * )node->child[i] );
+    if ( node->item[i] != NULL )
+      printf( "%d => ", *( uint32_t * )node->item[i]->key );
+  }
+}
+
 // Find an item within our b-tree.
 yabtl_item *yabtl_search_recursive
 (

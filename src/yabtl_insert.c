@@ -279,26 +279,8 @@ yabtl_item *yabtl_split_node
   mid = ( ( *left )->count >> 1 );
   mid_item = ( *left )->item[mid];
 
-/************
-HERE
-
-    1,3
-    /|\
-   0 2 4,5,6
-
-    1,3,5
-    /| \ \
-   0 2 4 6
-
-      3
-    /  \
-   1    5
-  /\    /\
- 0  2  4  6
-************/
-
   // Move half of the items and children to the right node.
-  for ( i = mid + 1; i < ( *left )->count; i++ )
+  for ( i = mid + 1; i < tree->order; i++ )
   {
     ( *right )->item[i - mid - 1] = ( *left )->item[i];
     ( *right )->child[i - mid - 1] = ( *left )->child[i];
@@ -328,8 +310,7 @@ yabtl_item *yabtl_insert_item_in_node
   yabtl_node **left_child,
   yabtl_node **right_child,
   yabtl_item *new_item,
-  int index,
-  bool update_children
+  int index
 )
 {
   int i;
@@ -340,12 +321,6 @@ yabtl_item *yabtl_insert_item_in_node
   {
     // Insert directly, no need to split.
     yabtl_insert_item( tree, node, index, new_item );
-
-    // Update child pointers.
-    if ( update_children == true )
-    {
-      ( *node )->child[index + 1] = *right_child;
-    }
 
     // We don't have a node to insert into the parent node.
     *to_be_inserted = NULL;
@@ -387,6 +362,7 @@ yabtl_item *yabtl_insert_recursive
   yabtl_node *new_node;
   void *temp;
   bool found;
+  yabtl_item *moved;
 
   // Make sure we weren't passed a null node.
   if ( node == NULL || *node == NULL )
@@ -412,12 +388,13 @@ yabtl_item *yabtl_insert_recursive
     }
   }
 
+  *to_be_inserted = NULL;
+  *left_child = NULL;
+  *right_child = NULL;
+
   if ( found == true )
   {
     // If we found the key in this node, return it without updating the data.
-    *to_be_inserted = NULL;
-    *left_child = NULL;
-    *right_child = NULL;
     return ( *node )->item[index];
   }
 
@@ -427,7 +404,8 @@ yabtl_item *yabtl_insert_recursive
     result = malloc( sizeof( yabtl_item ) );
     tree->copy_key( &result, key );
     result->data = data;
-    return yabtl_insert_item_in_node( tree, node, to_be_inserted, left_child, right_child, result, index, false );
+    yabtl_insert_item_in_node( tree, node, to_be_inserted, left_child, right_child, result, index );
+    return result;
   } else
   {
     // If it's not a leaf, go to the child at that index.
@@ -437,16 +415,19 @@ yabtl_item *yabtl_insert_recursive
       return result;
     }
 
+printf( "\nSaw a split, got: %d\n", *( int * )( *to_be_inserted )->key );
+printf( "Left child: %d, Right child: %d\n\n", *( int * )( *left_child )->item[0]->key, *( int * )( *right_child )->item[0]->key );
+
     // Need to add the child's overflowed item here.
-    found = false;
     index = yabtl_binary_search( tree, *node, key );
     if ( index < 0 )
     {
       // Should always be less than 0, otherwise we actually found this item?
       index = index * -1 - 1;
     }
-    result = *to_be_inserted;
-    return yabtl_insert_item_in_node( tree, node, to_be_inserted, left_child, right_child, result, index, true );
+    moved = *to_be_inserted;
+    yabtl_insert_item_in_node( tree, node, to_be_inserted, left_child, right_child, moved, index );
+    return result;
   }
 }
 
@@ -478,7 +459,6 @@ yabtl_item *yabtl_insert
     // Update the leaf flag.
     tree->root->leaf = false;
   }
-return result;
 
   int i;
   printf( "Top: " );
@@ -497,7 +477,7 @@ return result;
     node = tree->root->child[i];
     for ( j = 0; j < node->count; j++ )
       printf( "%d => ", *( int * ) node->item[j]->key );
-    printf( "Leaf: %s\n", node->leaf == true ? "True" : "False" );
+    printf( "\n" );
   }
   return result;
 }

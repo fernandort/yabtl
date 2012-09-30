@@ -50,17 +50,18 @@ typedef struct
 } yabtl;
 
 // Functions.
-yabtl_cmp yabtl_compare_string( void *key_1, void *key_2 );
-yabtl_cmp yabtl_compare_int( void *key_1, void *key_2 );
-yabtl_cmp yabtl_compare_uint32_t( void *key_1, void *key_2 );
-yabtl_cmp yabtl_compare_uint8_t( void *key_1, void *key_2 );
-yabtl_cmp yabtl_compare_char( void *key_1, void *key_2 );
-yabtl_cmp yabtl_compare_unsigned_char( void *key_1, void *key_2 );
-yabtl_cmp yabtl_compare_long( void *key_1, void *key_2 );
-yabtl_node *yabtl_allocate_node( yabtl *tree );
-void yabtl_init( yabtl *tree, uint32_t order, yabtl_key_type key_type );
-bool yabtl_split_child( yabtl *tree, yabtl_node *node, uint32_t index );
-yabtl_item *yabtl_insert( yabtl *tree, void *key, void *data );
+yabtl_cmp yabtl_compare_string( void *, void * );
+yabtl_cmp yabtl_compare_int( void *, void *key_2 );
+yabtl_cmp yabtl_compare_uint32_t( void *, void * );
+yabtl_cmp yabtl_compare_uint8_t( void *, void * );
+yabtl_cmp yabtl_compare_char( void *, void * );
+yabtl_cmp yabtl_compare_unsigned_char( void *, void * );
+yabtl_cmp yabtl_compare_long( void *, void * );
+yabtl_node *yabtl_allocate_node( yabtl * );
+void yabtl_init( yabtl *, uint32_t, yabtl_key_type );
+bool yabtl_split_child( yabtl *, yabtl_node *, uint32_t );
+yabtl_item *yabtl_insert( yabtl *, void *, void * );
 yabtl_cmp ( *yabtl_compare )( void *, void * );
 yabtl_item *yabtl_search( yabtl *, void *key );
-void yabtl_delete_node( yabtl_node **node );
+void yabtl_delete_node( yabtl_node ** );
+void yabtl_iterate( yabtl *, yabtl_node * );
