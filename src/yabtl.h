@@ -60,6 +60,6 @@ yabtl_cmp yabtl_compare_long( void *key_1, void *key_2 );
 yabtl_node *yabtl_allocate_node( yabtl *tree );
 void yabtl_init( yabtl *tree, uint32_t order, yabtl_key_type key_type );
 bool yabtl_split_child( yabtl *tree, yabtl_node *node, uint32_t index );
-yabtl_item *yabtl_insert( yabtl *tree, yabtl_node **node, void *key, void *data );
+yabtl_item *yabtl_insert( yabtl *tree, void *key, void *data );
 yabtl_cmp ( *yabtl_compare )( void *, void * );
-yabtl_item *yabtl_search( yabtl_node *node, void *key );
+yabtl_item *yabtl_search( yabtl *, void *key );

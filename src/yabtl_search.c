@@ -1,10 +1,9 @@
 #include <yabtl.h>
 
-// yabtl_compare is our wrapper comparison function, it must be pointed to a function by the client.
-yabtl_cmp ( *yabtl_compare )( void *, void * );
-
-yabtl_item *yabtl_search
+// Find an item within our b-tree.
+yabtl_item *yabtl_search_recursive
 (
+  yabtl *tree,
   yabtl_node *node,
   void *key
 )
@@ -20,8 +19,12 @@ yabtl_item *yabtl_search
 
   // Find the position in this node (or where to go next).
   i = 0;
-  while ( i < node->count && ( ( result = yabtl_compare( node->item[i]->key, key ) ) == LESS_THAN ) )
+  while ( i < node->count )
   {
+     if ( ( result = tree->compare( node->item[i]->key, key ) ) != LESS_THAN )
+     {
+       break;
+     }
      i++;
   }
 
@@ -36,6 +39,16 @@ yabtl_item *yabtl_search
   } else
   {
     // Need to check the child of this node.
-    return yabtl_search( ( yabtl_node * )node->child[i], key );
+    return yabtl_search_recursive( tree, ( yabtl_node * )node->child[i], key );
   }
+}
+
+// Wrapper to search.
+yabtl_item *yabtl_search
+(
+  yabtl *tree,
+  void *key
+)
+{
+  return yabtl_search_recursive( tree, tree->root, key );
 }
