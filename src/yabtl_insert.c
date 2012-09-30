@@ -88,7 +88,7 @@ void yabtl_init_node
   // Initialize the node, allocate memory for child and item pointers.
   ( *node )->leaf = true;
   ( *node )->count = 0;
-  ( *node )->child = malloc( tree->order * sizeof( void * ) );
+  ( *node )->child = malloc( ( tree->order + 1 ) * sizeof( void * ) );
   ( *node )->item = malloc( tree->order * sizeof( yabtl_item * ) );
 
   // Initialize our child and item pointers.
@@ -236,11 +236,19 @@ void yabtl_insert_item
 {
   int i;
 
-  // Insert directly, no need to split.
+  // Move over existing items.
   for ( i = ( *node )->count; i > index; i-- )
   {
     ( *node )->item[i] = ( *node )->item[i - 1];
   }
+
+  // Move children over.
+  for ( i = tree->order; i > index; i-- )
+  {
+    ( *node )->child[i] = ( *node )->child[i - 1];
+  }
+
+  // Increment count.
   ( *node )->count++;
 
   // Update the pointer.
@@ -271,6 +279,24 @@ yabtl_item *yabtl_split_node
   mid = ( ( *left )->count >> 1 );
   mid_item = ( *left )->item[mid];
 
+/************
+HERE
+
+    1,3
+    /|\
+   0 2 4,5,6
+
+    1,3,5
+    /| \ \
+   0 2 4 6
+
+      3
+    /  \
+   1    5
+  /\    /\
+ 0  2  4  6
+************/
+
   // Move half of the items and children to the right node.
   for ( i = mid + 1; i < ( *left )->count; i++ )
   {
@@ -279,6 +305,8 @@ yabtl_item *yabtl_split_node
     ( *left )->item[i] = NULL;
     ( *left )->child[i] = NULL;
   }
+  ( *right )->child[i - mid - 1] = ( *left )->child[i];
+  ( *left )->child[i] = NULL;
 
   // Update counts.
   ( *right )->count = ( *left )->count - mid - 1;
@@ -316,11 +344,6 @@ yabtl_item *yabtl_insert_item_in_node
     // Update child pointers.
     if ( update_children == true )
     {
-      for ( i = ( *node )->count + 1; i > index; i-- )
-      {
-        ( *node )->child[i] = ( *node )->child[i - 1];
-      }
-      ( *node )->child[index] = *left_child;
       ( *node )->child[index + 1] = *right_child;
     }
 
@@ -404,8 +427,8 @@ yabtl_item *yabtl_insert_recursive
     return yabtl_insert_item_in_node( tree, node, to_be_inserted, left_child, right_child, result, index, false );
   } else
   {
-    // If it's not a leaf, go to that child.
-    result = yabtl_insert_recursive( tree, ( yabtl_node **)&( *node )->child[i], to_be_inserted, left_child, right_child, key, data );
+    // If it's not a leaf, go to the child at that index.
+    result = yabtl_insert_recursive( tree, ( yabtl_node **)&( *node )->child[index], to_be_inserted, left_child, right_child, key, data );
     if ( *to_be_inserted == NULL )
     {
       return result;
@@ -452,6 +475,7 @@ yabtl_item *yabtl_insert
     // Update the leaf flag.
     tree->root->leaf = false;
   }
+return result;
 
   int i;
   printf( "Top: " );
@@ -470,8 +494,7 @@ yabtl_item *yabtl_insert
     node = tree->root->child[i];
     for ( j = 0; j < node->count; j++ )
       printf( "%d => ", *( int * ) node->item[j]->key );
-    printf( "\n" );
+    printf( "Leaf: %s\n", node->leaf == true ? "True" : "False" );
   }
-printf( "\n" );
   return result;
 }
