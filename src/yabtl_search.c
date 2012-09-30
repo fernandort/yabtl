@@ -3,7 +3,11 @@
 // yabtl_compare is our wrapper comparison function, it must be pointed to a function by the client.
 yabtl_cmp ( *yabtl_compare )( void *, void * );
 
-yabtl_item *yabtl_search( yabtl_node *node, void *key )
+yabtl_item *yabtl_search
+(
+  yabtl_node *node,
+  void *key
+)
 {
   uint32_t i;
   yabtl_cmp result;
