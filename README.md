@@ -78,7 +78,7 @@
   {
     printf( "%s already existed!\n", key );
   }
-```c
+```
 
 
 ## Destroying a tree.
