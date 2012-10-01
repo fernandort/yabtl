@@ -14,7 +14,10 @@ void yabtl_iterate
   }
   for ( i = 0; i < tree->order; i++ )
   {
-    yabtl_iterate( tree, ( yabtl_node * )node->child[i] );
+    if ( node->child[i] != NULL )
+    {
+      yabtl_iterate( tree, ( yabtl_node * )node->child[i] );
+    }
     if ( node->item[i] != NULL )
       printf( "%d => ", *( uint32_t * )node->item[i]->key );
   }
