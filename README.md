@@ -5,14 +5,15 @@
   #include <yabtl.h>
   ...
   yabtl tree;
-  yabtl_init( &tree, CHILDREN_PER_NODE, KEY_TYPE );
+  yabtl_init( &tree, 3, YABTL_STRING );
 
   /*********************************************************
-    CHILDREN_PER_NODE: determines how many items are
-      in each node as well as the number of comparisons
-      per node required.
+    yabtl_init second argument is children per node:
+      Determines how many items are in each node as well
+      as the number of comparisons per node required.
 
-    KEY_TYPE: data type of the key, can be one of:
+    yabtl_init third argument is the data type of the key.
+      The data type of the key can be one of the following:
       YABTL_STRING - char *
       YABTL_INT - int
       YABTL_UINT32_T - uint32_t
