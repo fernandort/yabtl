@@ -1,6 +1,7 @@
 #include <yabtl.h>
 
-void yabtl_iterate
+// Recursively iterate a b-tree.
+void yabtl_iterate_recursive
 (
   yabtl *tree,
   yabtl_node *node
@@ -16,11 +17,20 @@ void yabtl_iterate
   {
     if ( node->child[i] != NULL )
     {
-      yabtl_iterate( tree, ( yabtl_node * )node->child[i] );
+      yabtl_iterate_recursive( tree, ( yabtl_node * )node->child[i] );
     }
     if ( node->item[i] != NULL )
       printf( "%d => ", *( uint32_t * )node->item[i]->key );
   }
+}
+
+// Wrapper for iterate_recursive.
+void yabtl_iterate
+(
+  yabtl *tree
+)
+{
+  yabtl_iterate_recursive( tree, tree->root );
 }
 
 // Find an item within our b-tree.
