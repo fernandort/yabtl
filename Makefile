@@ -13,4 +13,4 @@ clean:
 	rm -f obj/*
 
 test:
-	gcc -o yabtl src/yabtl.c -lyabtl
+	gcc -o yabtl src/yabtl.c -lyabtl -O3
