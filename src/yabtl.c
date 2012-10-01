@@ -9,8 +9,7 @@ int main( int argc, char *argv[] )
   struct timeval tv1, tv2;
   yabtl_item *item;
   yabtl_node *iter;
-  void *data;
-  uint32_t TOTAL = 4194304;
+  uint32_t TOTAL = 1000; //4194304;
   uint32_t ORDER = 17;
 
   yabtl_init( &tree, ORDER, YABTL_UINT32_T );
@@ -18,9 +17,9 @@ int main( int argc, char *argv[] )
   gettimeofday(&tv1, NULL);
   for ( i = 0; i < TOTAL; i++ )
   {
-    v = rand() % TOTAL;
+    v = i; //rand() % TOTAL;
     l = v;
-    data = malloc( sizeof( uint32_t ) );
+    void *data = malloc( sizeof( uint32_t ) );
     *( uint32_t * )data = v;
     item = yabtl_insert( &tree, ( void * )&v, data );
     if ( item->data != data )
@@ -41,6 +40,14 @@ int main( int argc, char *argv[] )
     printf( "Found key: %d\n", *( int * )item->key );
   printf ("Total time to query: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
 
-  yabtl_destroy( &tree );
+yabtl_iterate( &tree, tree.root );
+printf( "\n" );
+
+printf( "Before destroying...\n" );
+//sleep( 15 );
+yabtl_destroy( &tree );
+printf( "Done destroying...\n" );
+//sleep( 15 );
+
   return 0;
 }
