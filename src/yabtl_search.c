@@ -32,7 +32,6 @@ yabtl_item *yabtl_search_recursive
 )
 {
   int index;
-  yabtl_cmp result;
 
   // Some basic checks before continuing.
   if ( node == NULL || key == NULL || node->count == 0 )

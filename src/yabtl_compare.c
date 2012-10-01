@@ -10,7 +10,7 @@ yabtl_cmp yabtl_compare_string
   int result;
 
   // Use the strcmp function to compare the keys.
-  result = strcmp( *( char ** )key_1, *( char ** )key_2 );
+  result = strcmp( ( char * )key_1, ( char * )key_2 );
   if ( result == 0 )
   {
     return EQUAL_TO;

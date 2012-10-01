@@ -301,7 +301,7 @@ yabtl_item *yabtl_insert_recursive
 )
 {
   int index;
-  int i, j, mid;
+  int i;
   yabtl_item *result;
   yabtl_node *new_node;
   bool found;
