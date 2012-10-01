@@ -427,29 +427,7 @@ yabtl_item *yabtl_insert
     // Update the leaf flag.
     tree->root->leaf = false;
   }
-  return result;
 
-  int i;
-  printf( "Top (%d): ", tree->root->count );
-  for ( i = 0; i < tree->root->count; i++ )
-  {
-    printf( "%d => ", *( int * )tree->root->item[i]->key );
-  }
-  printf( "\n" );
-  int j;
-  yabtl_node *node;
-  for ( i = 0; i < tree->root->count + 1; i++ )
-  {
-    if ( tree->root->child[i] == NULL )
-    {
-      break;
-    }
-    printf( "Child %d: ", i );
-    node = tree->root->child[i];
-    for ( j = 0; j < node->count; j++ )
-      printf( "%d => ", *( int * ) node->item[j]->key );
-    printf( "\n" );
-  }
-  printf( "\n" );
+  // Return new item.
   return result;
 }
