@@ -12,13 +12,19 @@ void yabtl_destroy_item
     return;
   }
 
-  // Free the item's parts.
-  free( ( *item )->key );
-  free( ( *item )->data );
+  // Free the item's key.
+  if ( ( *item )->key != NULL )
+  {
+    free( ( *item )->key );
+    ( *item )->key = NULL;
+  }
 
-  // Make sure we don't have hanging pointers.
-  ( *item )->key = NULL;
-  ( *item )->data = NULL;
+  // Free the data if it's not NULL.
+  if ( ( *item )->data != NULL )
+  {
+    free( ( *item )->data );
+    ( *item )->data = NULL;
+  }
 
   // Free the item.
   free( *item );
@@ -28,55 +34,84 @@ void yabtl_destroy_item
 // Merge the node origin into the node destination.
 void yabtl_merge_siblings
 (
+  yabtl *tree,
   yabtl_node **parent,
-  yabtl_node **destination,
   yabtl_node **origin,
+  yabtl_node **destination,
   int index,
+  int origin_index,
   bool merging_left
 )
 {
   int i;
+  int move_index;
   yabtl_item *to_move;
 
-  // First, insert the parent item at index into the destination node.
-  if ( merging_left == true )
+int j;
+yabtl_node *child;
+printf( "Parent items " );
+for ( i = 0; i < ( *parent )->count; i++ )
+  printf( " => %d", *( int * )( *parent )->item[i]->key );
+printf( "\n" );
+for ( i = 0; i < ( *parent )->count + 1; i++ )
+{
+  child = ( *parent )->child[i];
+  printf( " Child %d ", i );
+  for ( j = 0; j < child->count; j++ )
+     printf( " => %d", *( int * )child->item[j]->key );
+  printf( "\n" );
+}
+
+
+  // Set the item to be moved into the destination node.
+  printf( "parent count: %d, index: %d\n", ( *parent )->count, index );
+  if ( ( *parent )->count == index )
   {
-    index--;
-    to_move = ( *parent )->item[index];
+    move_index = index - 1;
   } else
   {
-    to_move = ( *parent )->item[index];
+    move_index = index;
   }
-  ( *destination )->item[( *destination )->count++] = to_move;
+  to_move = ( *parent )->item[move_index];
 
-printf( "Moving %d from parent.\n", *( int * )to_move->key );
-printf( "Shifting elements from %d+ over.\n", index );
-
-  // Remove the item at index from parent.
-  for ( i = index; i < ( *parent )->count + 1; i++ )
+  // Remove the separator node from the parent.
+  for ( i = move_index; i < tree->order - 1; i++ )
   {
     ( *parent )->item[i] = ( *parent )->item[i + 1];
-    ( *parent )->child[i] = ( *parent )->child[i + 1];
   }
-  ( *parent )->child[i] = ( *parent )->child[i + 1];
   ( *parent )->count--;
 
-  // Move all of the children over.
-  for ( i = 0; i < ( *origin )->count + 1; i++ )
-  {
-    ( *destination )->child[( *destination )->count + i] = ( *origin )->child[i];
-    ( *origin )->child[i] = NULL;
-  }
+  // Add the parent item to the destination node.
+  ( *destination )->item[( *destination )->count++] = to_move;
 
-  // Add all of the items and children from origin to destination.
+  // Move all of the items from the origin to the destination.
   for ( i = 0; i < ( *origin )->count; i++ )
   {
     ( *destination )->item[( *destination )->count++] = ( *origin )->item[i];
     ( *origin )->item[i] = NULL;
   }
 
-  // Destroy the origin.
+  // Destroy the origin node.
   yabtl_destroy_node( origin );
+
+  // Move over all of the children over.
+  for ( i = origin_index; i <= ( *parent )->count + 1; i++ )
+  {
+    ( *parent )->child[i] = ( *parent )->child[i + 1];
+  }
+
+printf( "Parent items " );
+for ( i = 0; i < ( *parent )->count; i++ )
+  printf( " => %d", *( int * )( *parent )->item[i]->key );
+printf( "\n" );
+for ( i = 0; i < ( *parent )->count + 1; i++ )
+{
+  child = ( *parent )->child[i];
+  printf( " Child %d ", i );
+  for ( j = 0; j < child->count; j++ )
+     printf( " => %d", *( int * )child->item[j]->key );
+  printf( "\n" );
+}
 }
 
 bool yabtl_delete_recursive
@@ -130,6 +165,7 @@ bool yabtl_delete_recursive
         printf( "All done, child still has %d items.\n", ( ( yabtl_node * )( *node )->child[index] )->count );
         return result;
       }
+
       if ( index - 1 >= 0 )
       {
         left = ( yabtl_node * )( *node )->child[index - 1];
@@ -146,15 +182,15 @@ bool yabtl_delete_recursive
         printf( "About to borrow from right sibling!\n" );
       } else if ( left != NULL )
       {
-        printf( "About to merge with left sibling!\n" );
-        yabtl_merge_siblings( node, ( yabtl_node ** )&( *node )->child[index - 1], ( yabtl_node ** )&( *node )->child[index], index, true );
+        printf( "About to merge with left sibling (%d into %d)!\n", index, index - 1 );
+        yabtl_merge_siblings( tree, node, ( yabtl_node ** )&( *node )->child[index], ( yabtl_node ** )&( *node )->child[index - 1], index - 1, index, true );
       } else if ( right != NULL )
       {
-printf( "Origin: %d, Destination: %d\n", index - 1, index );
-        printf( "About to merge with right sibling!\n" );
-        yabtl_merge_siblings( node, ( yabtl_node ** )&( *node )->child[index], ( yabtl_node ** )&( *node )->child[index + 1], index, false );
+        printf( "About to merge with right sibling (%d into %d)!\n", index + 1, index );
+        yabtl_merge_siblings( tree, node, ( yabtl_node ** )&( *node )->child[index + 1], ( yabtl_node ** )&( *node )->child[index], index, index + 1, false );
       }
     }
+    return result;
   }
 }
 
