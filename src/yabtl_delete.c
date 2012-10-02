@@ -1,7 +1,7 @@
 #include <yabtl.h>
 
 // Delete a single item from a node.
-void yabtl_delete_item
+void yabtl_destroy_item
 (
   yabtl_item **item
 )
@@ -25,8 +25,71 @@ void yabtl_delete_item
   *item = NULL;
 }
 
+bool yabtl_delete_recursive
+(
+  yabtl *tree,
+  yabtl_node **node,
+  void *key
+)
+{
+  int i;
+  int index;
+  bool result;
+
+  index = yabtl_binary_search( tree, *node, key );
+
+  if ( index >= 0 )
+  {
+    // Found the item.
+    if ( ( *node )->leaf == true )
+    {
+      // We're in a leaf node, so just remove it.
+      yabtl_destroy_item( &( *node )->item[index] );
+      for ( i = index; i < ( *node )->count - 1; i++ )
+      {
+        ( *node )->item[i] = ( *node )->item[i + 1];
+      }
+
+      // Decrement count.
+      ( *node )->count--;
+      return true;
+    } else
+    {
+      // This is an internal node, need to do more stuff...
+      printf( "O noes, I'm in an internal node!\n" );
+    }
+  } else
+  {
+    if ( ( *node )->leaf == true )
+    {
+      // We are in a leaf node, couldn't find it, return false.
+      return false;
+    }
+
+    // We didn't find the item, check child at the closest index.
+    index = index * -1 - 1;
+    if ( ( result = yabtl_delete_recursive( tree, ( yabtl_node ** )&( *node )->child[index], key ) ) == true )
+    {
+      printf( "Child count: %d\n", ( ( yabtl_node * )( *node )->child[index] )->count );
+      printf( "Need to have at least %d\n", tree->order - 1 );
+      // We found the item and deleted it.
+      printf( "Found and removed, weeee!\n" );
+    }
+  }
+}
+
+// Delete recursive wrapper.
+bool yabtl_delete
+(
+  yabtl *tree,
+  void *key
+)
+{
+  return yabtl_delete_recursive( tree, &tree->root, key );
+}
+
 // Delete an entire node from the tree.
-void yabtl_delete_node
+void yabtl_destroy_node
 (
   yabtl_node **node
 )
@@ -44,7 +107,7 @@ void yabtl_delete_node
   {
     if ( ( *node )->child[i] != NULL )
     {
-      yabtl_delete_node( ( yabtl_node ** )&( *node )->child[i] );
+      yabtl_destroy_node( ( yabtl_node ** )&( *node )->child[i] );
     }
   }
   free( ( *node )->child );
@@ -55,7 +118,7 @@ void yabtl_delete_node
   {
     if ( ( *node )->item[i] != NULL )
     {
-      yabtl_delete_item( ( yabtl_item ** )&( *node )->item[i] );
+      yabtl_destroy_item( ( yabtl_item ** )&( *node )->item[i] );
     }
   }
   free( ( *node )->item );
@@ -79,5 +142,5 @@ void yabtl_destroy
   }
 
   // Start at the root node and work our way down.
-  yabtl_delete_node( &tree->root );
+  yabtl_destroy_node( &tree->root );
 }
