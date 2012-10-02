@@ -13,7 +13,7 @@ void yabtl_iterate_recursive
   {
     return;
   }
-  for ( i = 0; i < tree->order; i++ )
+  for ( i = 0; i < ( tree->order << 1 ); i++ )
   {
     if ( node->child[i] != NULL )
     {

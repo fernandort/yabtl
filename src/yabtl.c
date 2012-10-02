@@ -1,8 +1,8 @@
 #include <yabtl.h>
 #include <sys/time.h>
 
-#define TOTAL 5000000
-#define ORDER 1025
+#define TOTAL 1000000
+#define ORDER 50
 
 // YABTL example.
 int main( int argc, char *argv[] )
@@ -13,7 +13,8 @@ int main( int argc, char *argv[] )
   yabtl_item *item;
 
   // Display our tree info.
-  printf( "Initializing a b-tree with %d items per node and %d children per node...\n", ORDER - 1, ORDER );
+  printf( "Initializing a b-tree with %d items per node and %d children per node...\n", ( ORDER << 1 ) - 1, ( ORDER << 1 ));
+  printf( "Inserting %d items...\n", TOTAL );
 
   // Initialize the b-tree.
   yabtl_init( &tree, ORDER, YABTL_UINT32_T );

@@ -43,7 +43,7 @@ typedef struct
 typedef struct
 {
   yabtl_node *root;        // Pointer to root node.
-  uint32_t order;          // The number of items per node for this b-tree.
+  int order;               // The number of items per node for this b-tree.
   yabtl_key_type key_type; // Type of data for the key.
   yabtl_cmp ( *compare )( void *, void * ); // Pointer to comparision function.
   void ( *copy_key )( yabtl_item **, void * ); // Pointer to the key copy function.
@@ -58,7 +58,7 @@ yabtl_cmp yabtl_compare_char( void *, void * );
 yabtl_cmp yabtl_compare_unsigned_char( void *, void * );
 yabtl_cmp yabtl_compare_long( void *, void * );
 yabtl_node *yabtl_allocate_node( yabtl * );
-void yabtl_init( yabtl *, uint32_t, yabtl_key_type );
+void yabtl_init( yabtl *, int, yabtl_key_type );
 bool yabtl_split_child( yabtl *, yabtl_node *, uint32_t );
 yabtl_item *yabtl_insert( yabtl *, void *, void * );
 yabtl_cmp ( *yabtl_compare )( void *, void * );

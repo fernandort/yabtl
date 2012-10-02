@@ -88,15 +88,16 @@ void yabtl_init_node
   // Initialize the node, allocate memory for child and item pointers.
   ( *node )->leaf = true;
   ( *node )->count = 0;
-  ( *node )->child = malloc( ( tree->order + 1 ) * sizeof( void * ) );
-  ( *node )->item = malloc( tree->order * sizeof( yabtl_item * ) );
+  ( *node )->child = malloc( ( ( tree->order << 1 ) + 1 ) * sizeof( void * ) );
+  ( *node )->item = malloc( ( tree->order << 1 ) * sizeof( yabtl_item * ) );
 
   // Initialize our child and item pointers.
-  for ( i = 0; i < tree->order; i++ )
+  for ( i = 0; i < ( tree->order << 1 ); i++ )
   {
     ( *node )->child[i] = NULL;
     ( *node )->item[i] = NULL;
   }
+  ( *node )->child[i] = NULL;
 }
 
 // Set the comparison function pointer.
@@ -146,7 +147,7 @@ void yabtl_set_functions
 void yabtl_init
 (
   yabtl *tree,
-  uint32_t order,
+  int order,
   yabtl_key_type key_type
 )
 {
@@ -265,11 +266,11 @@ yabtl_item *yabtl_split_node
   ( *right )->leaf = ( *left )->leaf;
 
   // Find the midpoint.
-  mid = ( tree->order >> 1 );
+  mid = tree->order - 1;
   mid_item = ( *left )->item[mid];
 
   // Move half of the items and children to the right node.
-  for ( i = mid + 1; i < tree->order; i++ )
+  for ( i = mid + 1; i < ( tree->order << 1 ); i++ )
   {
     ( *right )->item[i - mid - 1] = ( *left )->item[i];
     ( *left )->item[i] = NULL;
@@ -348,7 +349,7 @@ yabtl_item *yabtl_insert_recursive
     result->data = data;
 
     // If the node isn't empty, insert it directly.
-    if ( ( *node )->count < tree->order - 1 )
+    if ( ( *node )->count < ( tree->order << 1 ) - 1 )
     {
       *needs_split = false;
     } else
@@ -373,7 +374,7 @@ yabtl_item *yabtl_insert_recursive
   yabtl_init_node( tree, &new_node );
   to_move = yabtl_split_node( tree, ( yabtl_node ** )&( *node )->child[index], &new_node );
 
-  if ( ( *node )->count < tree->order - 1 )
+  if ( ( *node )->count < ( tree->order << 1 ) - 1 )
   {
     *needs_split = false;
   } else
@@ -383,7 +384,7 @@ yabtl_item *yabtl_insert_recursive
   yabtl_insert_item( tree, node, index, to_move );
 
   // Move over children at index + 1 to make room for new child.
-  for ( i = tree->order; i > index + 1; i-- )
+  for ( i = ( tree->order << 1 ); i > index + 1; i-- )
   {
     ( *node )->child[i] = ( *node )->child[i - 1];
   }
