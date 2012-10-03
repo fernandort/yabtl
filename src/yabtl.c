@@ -34,7 +34,7 @@ int main( int argc, char *argv[] )
   printf ("Total time to insert %d items: %f seconds\n", TOTAL, (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
 
   // Check how long a search on the last inserted item takes.
-  i--;
+  i = rand() % TOTAL;
   gettimeofday(&tv1, NULL);
   item = yabtl_search( &tree, ( void * )&i );
   gettimeofday(&tv2, NULL);
@@ -49,7 +49,6 @@ int main( int argc, char *argv[] )
   printf ("Total time to query: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
 
   // Delete an item.
-  i = rand() % TOTAL;
   gettimeofday( &tv1, NULL );
   yabtl_delete( &tree, ( void * )&i );
   gettimeofday( &tv2, NULL );
