@@ -11,6 +11,7 @@ install:
 
 clean:
 	rm -f obj/*
+	rm -f yabtl
 
 test:
 	gcc -o yabtl src/yabtl.c -lyabtl -O3
