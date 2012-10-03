@@ -171,11 +171,8 @@ yabtl_item *yabtl_delete_recursive
   yabtl_node *left, *right;
   yabtl_node *new_node;
   yabtl_item *parent_item;
-  yabtl_item *predecessor;
-  yabtl_item *temp;
 
   index = yabtl_binary_search( tree, *node, key );
-
   if ( index >= 0 )
   {
     // Found the item.
@@ -301,17 +298,15 @@ void yabtl_condense_root
 }
 
 // Delete recursive wrapper.
-bool yabtl_delete
+void yabtl_delete
 (
   yabtl *tree,
   void *key
 )
 {
-  int i, j;
   yabtl_item *result;
   yabtl_item *original;
   yabtl_item *temp;
-  yabtl_node *child;
 
   if ( ( result = yabtl_delete_recursive( tree, &tree->root, key ) ) != NULL )
   {

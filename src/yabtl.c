@@ -2,7 +2,7 @@
 #include <sys/time.h>
 
 #define TOTAL 1000000
-#define ORDER 50
+#define ORDER 3
 
 // YABTL example.
 int main( int argc, char *argv[] )
@@ -13,7 +13,7 @@ int main( int argc, char *argv[] )
   yabtl_item *item;
 
   // Display our tree info.
-  printf( "Initializing a b-tree with %d items per node and %d children per node...\n", ( ORDER << 1 ) - 1, ( ORDER << 1 ));
+  printf( "Initializing a b-tree with %d items per node and %d children per node...\n", ORDER - 1, ORDER );
   printf( "Inserting %d items...\n", TOTAL );
 
   // Initialize the b-tree.
@@ -47,6 +47,18 @@ int main( int argc, char *argv[] )
 
   // Show how long it took.
   printf ("Total time to query: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
+
+  // Delete an item.
+  i = rand() % TOTAL;
+  gettimeofday( &tv1, NULL );
+  yabtl_delete( &tree, ( void * )&i );
+  gettimeofday( &tv2, NULL );
+  if ( ( item = yabtl_search( &tree, ( void * )&i ) ) == NULL )
+    printf( "Successfully removed %d\n", i );
+  else
+    printf( "Failed to delete %d!\n", i );
+  // Show how long it took.
+  printf ("Total time to delete: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
 
   // Destroy the tree.
   printf( "Destroying b-tree...  " );
