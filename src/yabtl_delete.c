@@ -53,7 +53,7 @@ void yabtl_shift
     ( *parent )->item[index] = ( *right )->item[0];
 
     // Move the first child in right node to left node.
-    ( *left )->child[( *left )->count] = ( *left )->child[0];
+    ( *left )->child[( *left )->count] = ( *right )->child[0];
 
     // Shift over all the items and children in right node.
     for ( i = 0; i < ( *right )->count; i++ )
@@ -203,11 +203,11 @@ bool yabtl_delete_recursive
       if ( left != NULL && left->count > ( tree->order >> 1 ) )
       {
         // Shift an item from the left sibling into the current node.
-        yabtl_shift( tree, node, ( yabtl_node ** )&( *node )->child[index - 1], ( yabtl_node ** )&( *node )->child[index], index > 0 ? index - 1 : index, false );
+        yabtl_shift( tree, node, ( yabtl_node ** )&( *node )->child[index - 1], ( yabtl_node ** )&( *node )->child[index], index == ( *node )->count ? index - 1 : index, false );
       } else if ( right != NULL && right->count > ( tree->order >> 1 ) )
       {
         // Shift an item from the right sibling into the current node.
-        yabtl_shift( tree, node, ( yabtl_node ** )&( *node )->child[index], ( yabtl_node ** )&( *node )->child[index + 1], index > 0 ? index - 1 : index, true );
+        yabtl_shift( tree, node, ( yabtl_node ** )&( *node )->child[index], ( yabtl_node ** )&( *node )->child[index + 1], index == ( *node )->count ? index - 1 : index, true );
       } else
       {
         // If we can't borrow from a sibling, we need to merge two nodes, set the index of left and right siblings.
@@ -230,7 +230,6 @@ bool yabtl_delete_recursive
         {
           index--;
         }
-
         // Set the pointer to the item that will be moved.
         parent_item = ( *node )->item[index];
 
