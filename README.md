@@ -80,6 +80,11 @@
   }
 ```
 
+## Deleting an item.
+```c
+  ...
+  yabtl_delete( &tree, ( void * )key );
+```
 
 ## Destroying a tree.
 ```c
