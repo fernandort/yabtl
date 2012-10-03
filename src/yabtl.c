@@ -1,4 +1,5 @@
 #include <yabtl.h>
+#include <time.h>
 #include <sys/time.h>
 
 #define TOTAL 1000000
@@ -27,7 +28,7 @@ int main( int argc, char *argv[] )
 
   // Do TOTAL insertions.
   for ( i = 0; i < TOTAL; i++ )
-    ( void * )yabtl_insert( &tree, ( void * )&i, NULL );
+    yabtl_insert( &tree, ( void * )&i, NULL );
 
   // Stop the clock and display total time.
   gettimeofday(&tv2, NULL);
