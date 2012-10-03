@@ -65,6 +65,7 @@ yabtl_cmp ( *yabtl_compare )( void *, void * );
 yabtl_item *yabtl_search( yabtl *, void *key );
 void yabtl_destroy_node( yabtl_node ** );
 void yabtl_iterate( yabtl * );
+void yabtl_iterate_recursive( yabtl *, yabtl_node * );
 int yabtl_binary_search(yabtl *, yabtl_node *, void *);
 void yabtl_destroy( yabtl * );
 bool yabtl_delete( yabtl *, void * );
