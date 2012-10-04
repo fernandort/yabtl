@@ -49,6 +49,21 @@ typedef struct
   void ( *copy_key )( yabtl_item **, void * ); // Pointer to the key copy function.
 } yabtl;
 
+// Iterator stack.
+struct yabtl_iterator_stack
+{
+  struct yabtl_iterator_stack *next;
+  yabtl_node *node;
+  int index;
+  bool child_next;
+};
+
+// Definition of a b-tree iterator.
+typedef struct
+{
+  struct yabtl_iterator_stack *stack;
+} yabtl_iterator;
+
 // Functions.
 extern yabtl_cmp yabtl_compare_string( void *, void * );
 extern yabtl_cmp yabtl_compare_int( void *, void *key_2 );
@@ -66,7 +81,8 @@ extern void yabtl_insert_item( yabtl *, yabtl_node **, int, yabtl_item * );
 extern yabtl_cmp ( *yabtl_compare )( void *, void * );
 extern yabtl_item *yabtl_search( yabtl *, void *key );
 extern void yabtl_destroy_node( yabtl_node ** );
-extern void yabtl_iterate( yabtl * );
+extern yabtl_item *yabtl_iterate( yabtl_iterator * );
+extern void yabtl_init_iterator( yabtl *, yabtl_iterator * );
 extern void yabtl_iterate_recursive( yabtl *, yabtl_node * );
 extern int yabtl_binary_search(yabtl *, yabtl_node *, void *);
 extern void yabtl_destroy( yabtl * );

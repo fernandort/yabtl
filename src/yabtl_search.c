@@ -1,36 +1,102 @@
 #include <yabtl.h>
 
-// Recursively iterate a b-tree.
-void yabtl_iterate_recursive
+void yabtl_init_iterator
 (
   yabtl *tree,
-  yabtl_node *node
+  yabtl_iterator *iterator
 )
 {
-  int i;
-
-  if ( node == NULL )
+  if ( tree->root == NULL || tree->root->count == 0 )
   {
+    iterator->stack = NULL;
     return;
   }
-  for ( i = 0; i < node->count + 1; i++ )
-  {
-    if ( node->child[i] != NULL )
-    {
-      yabtl_iterate_recursive( tree, ( yabtl_node * )node->child[i] );
-    }
-    if ( node->item[i] != NULL )
-      printf( "%d => ", *( uint32_t * )node->item[i]->key );
-  }
+
+  // Create the stack and insert the root node.
+  iterator->stack = malloc( sizeof( struct yabtl_iterator_stack ) );
+  iterator->stack->next = NULL;
+  iterator->stack->index = 0;
+  iterator->stack->child_next = true;
+  iterator->stack->node = tree->root;
 }
 
-// Wrapper for iterate_recursive.
-void yabtl_iterate
+// Pop an item off the iterator stack.
+void yabtl_iterator_pop
 (
-  yabtl *tree
+  yabtl_iterator *iterator
 )
 {
-  yabtl_iterate_recursive( tree, tree->root );
+  struct yabtl_iterator_stack *next;
+  next = iterator->stack->next;
+  free( iterator->stack );
+  iterator->stack = next;
+}
+
+// Iterate a tree.
+yabtl_item *yabtl_iterate
+(
+  yabtl_iterator *iterator
+)
+{
+  struct yabtl_iterator_stack *iter;
+  struct yabtl_iterator_stack *next;
+  yabtl_node *node;
+
+  // If stack is null, no more items, done iterating.
+  if ( iterator->stack == NULL )
+  {
+    return NULL;
+  }
+
+  iter = iterator->stack;
+  if ( iter->node->leaf == true )
+  {
+    iter->index++;
+    if ( iter->index > iter->node->count )
+    {
+      // No more items to visit, pop this node off the stack and re-iterate.
+      yabtl_iterator_pop( iterator );
+      return yabtl_iterate( iterator );
+    }
+
+    // We have a non-null item, return it.
+    return iter->node->item[iter->index - 1];
+  } else
+  {
+    if ( iter->child_next == true )
+    {
+      // Set this flag so we visit the item next.
+      iter->child_next = false;
+
+      if ( iter->node->child[iter->index] != NULL )
+      {
+        // Push the child onto the stack and re-iterate.
+        iter->child_next = false;
+        next = malloc( sizeof( struct yabtl_iterator_stack ) );
+        next->index = 0;
+        next->child_next = true;
+        next->node = iter->node->child[iter->index];
+        next->next = iter;
+        iterator->stack = next;
+        return yabtl_iterate( iterator );
+      }
+
+      // No more children to visit, pop this node off the stack and iterate.
+      yabtl_iterator_pop( iterator );
+      return yabtl_iterate( iterator );
+    } else
+    {
+      iter->index++;
+      iter->child_next = true;
+      if ( iter->index > iter->node->count )
+      {
+        // No more items left.
+        yabtl_iterator_pop( iterator );
+        return yabtl_iterate( iterator );
+      }
+      return iter->node->item[iter->index - 1];
+    }
+  }
 }
 
 // Find an item within our b-tree.

@@ -2,7 +2,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define TOTAL 1000000
+#define TOTAL 1000
 #define ORDER 3
 
 // YABTL example.
@@ -48,6 +48,16 @@ int main( int argc, char *argv[] )
 
   // Show how long it took.
   printf ("Total time to query: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
+
+  yabtl_iterator iter;
+  yabtl_init_iterator( &tree, &iter );
+  gettimeofday( &tv1, NULL );
+  while ( ( item = yabtl_iterate( &iter ) ) != NULL )
+  {
+    // Do something with item here.
+  }
+  gettimeofday( &tv2, NULL );
+  printf ("Total time to iterate all items: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
 
   // Delete an item.
   gettimeofday( &tv1, NULL );
