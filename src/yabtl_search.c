@@ -40,7 +40,6 @@ yabtl_item *yabtl_iterate
 {
   struct yabtl_iterator_stack *iter;
   struct yabtl_iterator_stack *next;
-  yabtl_node *node;
 
   // If stack is null, no more items, done iterating.
   if ( iterator->stack == NULL )
