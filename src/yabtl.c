@@ -13,10 +13,13 @@ sem_t timer_lock;
 // B-tree for timed insert.
 yabtl timed_tree;
 
+// Number of queries performed in 1 second.
+uint32_t search_count;
+
 // Cache the interrupt signal for the timed insert.
 static void catch_signal( int signal )
 {
-  // No-op.
+  sem_post( &timer_lock );
 }
 
 // Run inserts for 1 second to see how many we can get.
@@ -31,6 +34,20 @@ void *timed_inserts( void *args )
   {
     ( void )yabtl_insert( &timed_tree, ( void * )&i, NULL );
     i++;
+  }
+}
+
+// Run queries for 1 second to see how many we can get.
+void *timed_search( void *args )
+{
+  search_count = 0;
+
+  // Start searching.
+  sem_wait( &timer_lock );
+  while ( true )
+  {
+    ( void )yabtl_search( &timed_tree, ( void * )&search_count );
+    search_count++;
   }
 }
 
@@ -105,13 +122,15 @@ int main( int argc, char *argv[] )
   yabtl_destroy( &tree );
   printf( "Done!\n" );
 
-  // Real stress-test - Insert as many items as possible in 1 second.
+  // Initalize our stress test environment.
   sem_init( &timer_lock, 0, 1 );
-  sem_wait( &timer_lock );
   yabtl_init( &timed_tree, ORDER, YABTL_UINT32_T );
-  printf( "Performing timed insert.\n" );
-  pthread_create( &thread, NULL, timed_inserts, NULL );
   signal( SIGINT, catch_signal );
+
+  // Insert stress test.
+  sem_wait( &timer_lock );
+  printf( "Performing timed inserts.\n" );
+  pthread_create( &thread, NULL, timed_inserts, NULL );
   sem_post( &timer_lock );
   sleep( 1 );
   pthread_kill( thread, SIGINT );
@@ -120,5 +139,14 @@ int main( int argc, char *argv[] )
   while ( ( item = yabtl_iterate( &iter ) ) != NULL )
     i++;
   printf( "Inserted %d items in 1 second\n", i );
+
+  printf( "Performing timed searches.\n" );
+  sem_wait( &timer_lock );
+  pthread_create( &thread, NULL, timed_search, NULL );
+  sem_post( &timer_lock );
+  sleep( 1 );
+  pthread_kill( thread, SIGINT );
+  printf( "Performed %d queries in 1 second\n", search_count );
+
   return 0;
 }
