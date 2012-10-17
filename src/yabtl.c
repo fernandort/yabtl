@@ -1,14 +1,44 @@
 #include <yabtl.h>
 #include <time.h>
 #include <sys/time.h>
+#include <semaphore.h>
+#include <signal.h>
 
-#define TOTAL 1000
-#define ORDER 3
+#define TOTAL 1000000
+#define ORDER 1000
+
+// Semaphore to start timing.
+sem_t timer_lock;
+
+// B-tree for timed insert.
+yabtl timed_tree;
+
+// Cache the interrupt signal for the timed insert.
+static void catch_signal( int signal )
+{
+  // No-op.
+}
+
+// Run inserts for 1 second to see how many we can get.
+void *timed_inserts( void *args )
+{
+  uint32_t i;
+
+  // Start inserting.
+  i = 0;
+  sem_wait( &timer_lock );
+  while ( true )
+  {
+    ( void )yabtl_insert( &timed_tree, ( void * )&i, NULL );
+    i++;
+  }
+}
 
 // YABTL example.
 int main( int argc, char *argv[] )
 {
-  yabtl tree;
+  pthread_t thread;
+  yabtl tree, timed;
   uint32_t i;
   struct timeval tv1, tv2;
   yabtl_item *item;
@@ -75,5 +105,20 @@ int main( int argc, char *argv[] )
   yabtl_destroy( &tree );
   printf( "Done!\n" );
 
+  // Real stress-test - Insert as many items as possible in 1 second.
+  sem_init( &timer_lock, 0, 1 );
+  sem_wait( &timer_lock );
+  yabtl_init( &timed_tree, ORDER, YABTL_UINT32_T );
+  printf( "Performing timed insert.\n" );
+  pthread_create( &thread, NULL, timed_inserts, NULL );
+  signal( SIGINT, catch_signal );
+  sem_post( &timer_lock );
+  sleep( 1 );
+  pthread_kill( thread, SIGINT );
+  i = 0;
+  yabtl_init_iterator( &timed_tree, &iter );
+  while ( ( item = yabtl_iterate( &iter ) ) != NULL )
+    i++;
+  printf( "Inserted %d items in 1 second\n", i );
   return 0;
 }

@@ -14,4 +14,4 @@ clean:
 	rm -f yabtl
 
 test:
-	gcc -o yabtl src/yabtl.c -lyabtl -O3
+	gcc -o yabtl src/yabtl.c src/yabtl_compare.c src/yabtl_delete.c src/yabtl_insert.c src/yabtl_search.c -O3
