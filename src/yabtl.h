@@ -15,6 +15,7 @@ typedef enum yabtl_cmp {
 typedef enum yabtl_key_type
 {
   YABTL_STRING,
+  YABTL_UNSIGNED_STRING,
   YABTL_INT,
   YABTL_UINT32_T,
   YABTL_UINT8_T,
@@ -66,6 +67,7 @@ typedef struct
 
 // Functions.
 extern yabtl_cmp yabtl_compare_string( void *, void * );
+extern yabtl_cmp yabtl_compare_unsigned_string( void *, void * );
 extern yabtl_cmp yabtl_compare_int( void *, void *key_2 );
 extern yabtl_cmp yabtl_compare_uint32_t( void *, void * );
 extern yabtl_cmp yabtl_compare_uint8_t( void *, void * );

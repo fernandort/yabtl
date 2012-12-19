@@ -10,6 +10,17 @@ void yabtl_copy_key_string
   ( *item )->key = ( void * )strdup( ( char * )key );
 }
 
+// Copy a key of unsigned char * type.
+void yabtl_copy_key_unsigned_string
+(
+  yabtl_item **item,
+  void *key
+)
+{
+  ( *item )->key = calloc( sizeof( unsigned char ), strlen( ( char * )key ) );
+  memcpy( &( *item )->key, &key, strlen( ( char * )key ) );
+}
+
 // Copy a key of int type.
 void yabtl_copy_key_int
 (
@@ -111,6 +122,10 @@ void yabtl_set_functions
     case YABTL_STRING:
       tree->compare = &yabtl_compare_string;
       tree->copy_key = &yabtl_copy_key_string;
+      break;
+    case YABTL_UNSIGNED_STRING:
+      tree->compare = &yabtl_compare_unsigned_string;
+      tree->copy_key = &yabtl_copy_key_unsigned_string;
       break;
     case YABTL_INT:
       tree->compare = &yabtl_compare_int;

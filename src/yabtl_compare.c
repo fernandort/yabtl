@@ -23,6 +23,29 @@ yabtl_cmp yabtl_compare_string
   }
 }
 
+// Compare two unsigned strings.
+yabtl_cmp yabtl_compare_unsigned_string
+(
+  void *key_1,
+  void *key_2
+)
+{
+  int result;
+
+  // Use the strcmp function to compare the keys.
+  result = strcmp( ( char * )key_1, ( char * )key_2 );
+  if ( result == 0 )
+  {
+    return EQUAL_TO;
+  } else if ( result < 0 )
+  {
+    return LESS_THAN;
+  } else
+  {
+    return GREATER_THAN;
+  }
+}
+
 // Compare the value of two integers.
 yabtl_cmp yabtl_compare_int
 (

@@ -15,6 +15,7 @@
     yabtl_init third argument is the data type of the key.
       The data type of the key can be one of the following:
       YABTL_STRING - char *
+      YABTL_UNSIGNED_STRING - unsigned char *
       YABTL_INT - int
       YABTL_UINT32_T - uint32_t
       YABTL_UINT8_T - uint8_t
