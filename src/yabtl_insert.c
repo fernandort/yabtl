@@ -17,8 +17,18 @@ void yabtl_copy_key_unsigned_string
   void *key
 )
 {
-  ( *item )->key = calloc( sizeof( unsigned char ), strlen( ( char * )key ) );
-  memcpy( &( *item )->key, &key, strlen( ( char * )key ) );
+  unsigned int length;
+  unsigned char *pch;
+
+  length = 0;
+  pch = key;
+  while ( *pch++ )
+  {
+    length++;
+  }
+
+  ( *item )->key = calloc( sizeof( unsigned char ), length + 1 );
+  memcpy( &( *item )->key, &key, length + 1 );
 }
 
 // Copy a key of int type.

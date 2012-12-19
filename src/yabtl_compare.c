@@ -31,9 +31,29 @@ yabtl_cmp yabtl_compare_unsigned_string
 )
 {
   int result;
+  int length_1;
+  int length_2;
+  int cmp_length;
+  unsigned char *pch_1;
+  unsigned char *pch_2;
 
-  // Use the strcmp function to compare the keys.
-  result = strcmp( ( char * )key_1, ( char * )key_2 );
+  // Calculate the string lengths.
+  length_1 = 0;
+  pch_1 = key_1;
+  while ( *pch_1++ )
+  {
+    length_1++;
+  }
+  length_2 = 0;
+  pch_2 = key_2;
+  while ( *pch_2++ )
+  {
+    length_2++;
+  }
+
+  // Determine how many bytes to compare.
+  cmp_length = length_1 >= length_2 ? length_2 : length_1;
+  result = memcmp( key_1, key_2, cmp_length + 1 );
   if ( result == 0 )
   {
     return EQUAL_TO;
