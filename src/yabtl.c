@@ -59,6 +59,7 @@ int main( int argc, char *argv[] )
   uint32_t i;
   struct timeval tv1, tv2;
   yabtl_item *item;
+  yabtl_iterator iter;
 
   // Display our tree info.
   printf( "Initializing a b-tree with %d items per node and %d children per node...\n", ORDER - 1, ORDER );
@@ -96,7 +97,6 @@ int main( int argc, char *argv[] )
   // Show how long it took.
   printf ("Total time to query: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
 
-  yabtl_iterator iter;
   yabtl_init_iterator( &tree, &iter );
   gettimeofday( &tv1, NULL );
   while ( ( item = yabtl_iterate( &iter ) ) != NULL )
@@ -116,6 +116,28 @@ int main( int argc, char *argv[] )
     printf( "Failed to delete %d!\n", i );
   // Show how long it took.
   printf ("Total time to delete: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
+
+  // Delete an item that doesn't exist.
+  printf( "Trying to delete an item that doesn't exist...\n" );
+  i = TOTAL + 1;
+  yabtl_delete( &tree, ( void * )&i );
+  printf( "Deleting items one at a time...\n" );
+  gettimeofday( &tv1, NULL );
+  for ( i = 0; i < TOTAL; i++ )
+  {
+    yabtl_delete( &tree, ( void * )&i );
+  }
+  gettimeofday( &tv2, NULL );
+  printf( "Total time to delete all one at a time: %f seconds\n", (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +  (double) (tv2.tv_sec - tv1.tv_sec));
+
+  // Make sure there are no items left.
+  yabtl_init_iterator( &tree, &iter );
+  i = 0;
+  while ( ( item = yabtl_iterate( &iter ) ) != NULL )
+  {
+    i++;
+  }
+  printf( "%d items remaining after deleting one at a time.\n", i );
 
   // Destroy the tree.
   printf( "Destroying b-tree...  " );
