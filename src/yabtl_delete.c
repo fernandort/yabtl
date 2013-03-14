@@ -62,10 +62,13 @@ void yabtl_shift
       ( *right )->child[i] = ( *right )->child[i + 1];
     }
     ( *right )->child[i] = ( *right )->child[i + 1];
+
+    // Decrement count.
+    ( * right )->count--;
   } else
   {
     // Shift all the items in the right node over.
-    for ( i = ( *right )->count; i > 0; i++ )
+    for ( i = ( *right )->count; i > 0; i-- )
     {
       ( *right )->item[i] = ( *right )->item[i - 1];
       ( *right )->child[i] = ( *right )->child[i - 1];
@@ -114,14 +117,14 @@ void yabtl_merge_siblings
   // Move all of the items from the right sibling into the new node.
   for ( i = 0; i < ( *right )->count; i++ )
   {
-    ( *destination )->item[( *destination )->count + i] = ( *right )->item[i];
-    ( *destination )->child[( *destination )->count + i + 1] = ( *right )->child[i];
+    ( *destination )->item[( *destination )->count++] = ( *right )->item[i];
+    ( *destination )->child[( *destination )->count] = ( *right )->child[i];
     ( *right )->item[i] = NULL;
     ( *right )->child[i] = NULL;
   }
-  ( *destination )->child[( *destination )->count + i + 1] = ( *right )->child[i];
+
+  ( *destination )->child[( *destination )->count + 1] = ( *right )->child[i];
   ( *right )->child[i] = NULL;
-  ( *destination )->count += ( *right )->count;
 
   // Insert the parent item.
   index = yabtl_binary_search( tree, *destination, parent_item->key ) * -1 - 1;
@@ -172,6 +175,10 @@ yabtl_item *yabtl_delete_recursive
   yabtl_node *new_node;
   yabtl_item *parent_item;
 
+  // Make sure node isn't null.
+  if ( node == NULL || *node == NULL ) {
+    return NULL;
+  }
   index = yabtl_binary_search( tree, *node, key );
   if ( index >= 0 )
   {
@@ -206,6 +213,10 @@ yabtl_item *yabtl_delete_recursive
 
     // We didn't find the item, check child at the closest index.
     index = index * -1 - 1;
+    // Make sure it's not null first!
+    if ( ( * node )->child[index] == NULL ) {
+      return NULL;
+    }
     result = yabtl_delete_recursive( tree, ( yabtl_node ** )&( *node )->child[index], key );
     if ( ( ( yabtl_node * )( *node )->child[index] )->count >= ( tree->order >> 1 ) )
     {
@@ -307,6 +318,11 @@ void yabtl_delete
   yabtl_item *result;
   yabtl_item *original;
   yabtl_item *temp;
+
+  // Make sure we at least have a root node first.
+  if ( tree == NULL || tree->root == NULL ) {
+    return;
+  }
 
   if ( ( result = yabtl_delete_recursive( tree, &tree->root, key ) ) != NULL )
   {
