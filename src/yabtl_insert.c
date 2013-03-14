@@ -178,6 +178,12 @@ void yabtl_init
 {
   yabtl_node *node;
 
+  // Make sure order is > 2.
+  if ( order <= 2 ) {
+    tree->root = NULL;
+    return;
+  }
+
   // Set our items per node.
   tree->order = order;
   tree->key_type = key_type;
