@@ -1,9 +1,9 @@
 all:
-	gcc -o obj/yabtl_compare.o -Wall -Werror -fPIC -c src/yabtl_compare.c -I./src -O3
-	gcc -o obj/yabtl_delete.o -Wall -Werror -fPIC -c src/yabtl_delete.c -I./src -O3
-	gcc -o obj/yabtl_insert.o -Wall -Werror -fPIC -c src/yabtl_insert.c -I./src -O3
-	gcc -o obj/yabtl_search.o -Wall -Werror -fPIC -c src/yabtl_search.c -I./src -O3
-	gcc -shared -o obj/libyabtl.so obj/*.o -O3
+	gcc -o obj/yabtl_compare.o -Wall -Werror -fPIC -c src/yabtl_compare.c -I./src -O2
+	gcc -o obj/yabtl_delete.o -Wall -Werror -fPIC -c src/yabtl_delete.c -I./src -O2
+	gcc -o obj/yabtl_insert.o -Wall -Werror -fPIC -c src/yabtl_insert.c -I./src -O2
+	gcc -o obj/yabtl_search.o -Wall -Werror -fPIC -c src/yabtl_search.c -I./src -O2
+	gcc -shared -o obj/libyabtl.so obj/*.o -O2
 
 install:
 	cp obj/libyabtl.so /usr/local/lib/
@@ -14,4 +14,4 @@ clean:
 	rm -f yabtl
 
 test:
-	gcc -o yabtl src/yabtl.c src/yabtl_compare.c src/yabtl_delete.c src/yabtl_insert.c src/yabtl_search.c -lpthread -O3
+	gcc -o yabtl src/yabtl.c src/yabtl_compare.c src/yabtl_delete.c src/yabtl_insert.c src/yabtl_search.c -lpthread -O2

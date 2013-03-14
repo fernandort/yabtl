@@ -369,7 +369,7 @@ void yabtl_destroy_node
   int i;
 
   // Make sure the node isn't already null.
-  if ( *node == NULL )
+  if ( node == NULL || *node == NULL )
   {
     return;
   }
